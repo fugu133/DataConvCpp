@@ -1,6 +1,6 @@
 /**
  * @file StringHelper.hpp
- * @author Kaiji Takeuchi
+ * @author fugu133
  * @brief
  * @version 0.1
  * @date 2024-02-25

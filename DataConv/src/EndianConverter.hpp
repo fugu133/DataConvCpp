@@ -11,7 +11,7 @@
 
 /**
  * @file EndianC.hpp
- * @author Kaiji Takeuchi
+ * @author fugu133
  * @brief エンディアン変換
  * @version 0.1
  * @date 2023-05-02

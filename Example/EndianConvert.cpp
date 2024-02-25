@@ -1,6 +1,6 @@
 /**
  * @file EndianConvert.cpp
- * @author Kaiji Takeuchi
+ * @author fugu133
  * @brief
  * @version 0.1
  * @date 2024-02-25
@@ -11,7 +11,7 @@
 
 #include <iostream>
 
-#include "../DataConv/src/EndianConverter.hpp"
+#include "../DataConv/Core"
 
 using namespace dataconv;
 
