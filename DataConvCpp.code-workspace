@@ -66,7 +66,11 @@
 			"map": "cpp",
 			"mutex": "cpp",
 			"stop_token": "cpp",
-			"thread": "cpp"
+			"thread": "cpp",
+			"any": "cpp",
+			"codecvt": "cpp",
+			"forward_list": "cpp",
+			"valarray": "cpp"
 		}
 	}
 }

@@ -6,6 +6,7 @@
             "command": "/usr/bin/g++",
             "args": [
                 "-std=c++2a",
+                "-fconcepts",
                 "-fdiagnostics-color=always",
                 "-g",
                 "-I${workspaceFolder}",

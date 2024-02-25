@@ -1,0 +1,27 @@
+/**
+ * @file Core.hpp
+ * @author fugu133
+ * @brief 
+ * @version 0.1
+ * @date 2024-02-25
+ * 
+ * @copyright Copyright (c) 2024 fugu133
+ * 
+ */
+
+#pragma once
+
+#include "src/DataConverter.hpp"
+
+DATACONV_NAMESPACE_BEGIN
+
+/**
+ * @brief ライブラリのバージョンを取得する
+ * 
+ * @return std::string バージョン
+ */
+inline static std::string getLibVersion() {
+    return DATACONV_TO_STRING(DATACONV_VERSION);
+}
+
+DATACONV_NAMESPACE_END
