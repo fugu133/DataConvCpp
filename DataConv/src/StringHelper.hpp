@@ -1,11 +1,11 @@
 /**
  * @file StringHelper.hpp
  * @author fugu133
- * @brief
+ * @brief 文字列操作の補助機能
  * @version 0.1
  * @date 2024-02-25
  *
- * @copyright Copyright (c) 2024
+ * @copyright Copyright (c) 2024 fugu133
  *
  */
 
@@ -23,26 +23,20 @@
 
 DATACONV_NAMESPACE_BEGIN
 
-struct StringStreamHelper {
-	template <typename T>
-	static auto reset(std::basic_stringstream<T>& s) {
-		s.str(" ");
-		s.clear(std::basic_stringstream<T>::goodbit);
-	}
-
-	template <typename T>
-	static auto reset(std::basic_istringstream<T>& s) {
-		s.str(" ");
-		s.clear(std::basic_istringstream<T>::goodbit);
-	}
-};
-
+/**
+ * @brief 配列文字のフォーマットポリシー
+ * 
+ */
 struct array_stream_policy {
 	static constexpr char* prefix = (char*)"";
 	static constexpr char* suffix = (char*)"";
 	static constexpr char* delimiter = (char*)" ";
 };
 
+/**
+ * @brief 16進数文字列のフォーマットポリシー
+ * 
+ */
 struct hex_stream_policy {
 	static constexpr char* prefix = (char*)"0x";
 	static constexpr std::size_t width = 2;
@@ -51,6 +45,13 @@ struct hex_stream_policy {
 	static constexpr bool split = true;
 };
 
+/**
+ * @brief 16進数文字列に変換
+ * 
+ * @tparam T 変換対象の型 
+ * @param value 変換対象の値
+ * @return std::string 16進数文字列
+ */
 template <class T>
   requires std::is_arithmetic_v<T> || std::is_enum_v<T> static auto to_hex_string(const T& value) noexcept -> std::string {
 	if constexpr (sizeof(T) == 1) {
@@ -68,6 +69,13 @@ template <class T>
 	}
 }
 
+/**
+ * @brief シーケンスコンテナ型の16進数文字列に変換
+ * 
+ * @tparam T 変換対象の型 
+ * @param value 変換対象の値
+ * @return std::string 16進数文字列
+ */
 template <sequence_container_type T>
   requires std::is_arithmetic_v<typename T::value_type> ||
   std::is_enum_v<typename T::value_type> static auto to_hex_string(const T& value) noexcept -> std::string {
@@ -84,6 +92,13 @@ template <sequence_container_type T>
 	return ss.str();
 }
 
+/**
+ * @brief エンディアンを考慮した16進数文字列に変換
+ * 
+ * @tparam T 変換対象の型 
+ * @param value 変換対象の値
+ * @return std::string 16進数文字列
+ */
 template <class T>
   requires std::is_arithmetic_v<T> || std::is_enum_v<T> static auto to_ordered_hex_string(const T& value) noexcept -> std::string {
 	T big_endian_value = to_big_endian(value);
@@ -117,6 +132,13 @@ template <class T>
 	}
 }
 
+/**
+ * @brief シーケンスコンテナ型のエンディアンを考慮した16進数文字列に変換
+ * 
+ * @tparam T 変換対象の型 
+ * @param value 変換対象の値
+ * @return std::string 16進数文字列
+ */
 template <sequence_container_type T>
   requires std::is_arithmetic_v<typename T::value_type> ||
   std::is_enum_v<typename T::value_type> static auto to_ordered_hex_string(const T& value) noexcept -> std::string {
@@ -133,10 +155,25 @@ template <sequence_container_type T>
 	return ss.str();
 }
 
+/**
+ * @brief 16進数文字列の文字レンジをチェック
+ * 
+ * @param start 変換対象の文字列
+ * @param end 変換後の文字列の終端
+ * @return std::uint64_t 変換後の値
+ */
 static inline auto check_hex_range_string(const char& c) -> bool {
 	return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 }
 
+/**
+ * @brief 16進数文字列を整数に変換
+ * 
+ * @param start 変換対象の文字列先頭のポインタ
+ * @param end 変換対象の文字列終端のポインタ
+ * @param digit 変換する最大桁数
+ * @return std::uint64_t 変換後の値
+ */
 static inline auto hex_string_to_integer(const char* start, char** end, unsigned int digit = 16) -> std::uint64_t {
 	std::uint64_t result = 0;
 
@@ -168,16 +205,39 @@ static inline auto hex_string_to_integer(const char* start, char** end, unsigned
 	return result;
 }
 
+/**
+ * @brief 16進数文字列を整数に変換
+ * 
+ * @tparam T 変換先の型
+ * @param start  変換対象の文字列先頭のポインタ
+ * @param end  変換対象の文字列終端のポインタ
+ * @return T 
+ */
 template <class T>
 requires std::is_integral_v<T> static auto hex_string_to_integer(const char* start, char** end) noexcept -> T {
 	return hex_string_to_integer(start, end, sizeof(T) * 2);
 }
 
+/**
+ * @brief 16進数文字列を整数に変換
+ * 
+ * @tparam T 変換先の型
+ * @param start  変換対象の文字列
+ * @return T 
+ */
 template <class T>
 requires std::is_integral_v<T> static auto hex_string_to_integer(const std::string& hex_str) noexcept -> T {
 	return hex_string_to_integer(hex_str.c_str(), nullptr, sizeof(T) * 2);
 }
 
+/**
+ * @brief 16進数文字列を配列に変換
+ * 
+ * @tparam T 変換先の型
+ * @param start  変換対象の文字列先頭のポインタ
+ * @param array  変換後の配列
+ * @return std::size_t  変換後の配列の要素数
+ */
 template <sequence_container_type T>
 requires std::is_integral_v<typename T::value_type> static auto hex_string_to_array(const char* start, T& array) noexcept -> std::size_t {
 	char* read_ptr = const_cast<char*>(start);
@@ -200,6 +260,14 @@ requires std::is_integral_v<typename T::value_type> static auto hex_string_to_ar
 	return write_idx;
 }
 
+/**
+ * @brief 文字列の連結
+ * 
+ * @param left 左辺文字列
+ * @param right 右辺文字列
+ * @param delimiter デリミタ文字列
+ * @return std::string 連結後の文字列
+ */
 static inline auto joint(const std::string& left, const std::string& right, const std::string& delimiter = " ") -> std::string {
 	if (left.empty() && right.empty()) {
 		return std::string();

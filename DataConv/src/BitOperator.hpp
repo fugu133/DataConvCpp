@@ -1,11 +1,11 @@
 /**
  * @file BitOperator.hpp
  * @author fugu133
- * @brief
+ * @brief ビット操作機能
  * @version 0.1
  * @date 2024-02-24
  *
- * @copyright Copyright (c) 2024
+ * @copyright Copyright (c) 2024 fugu133
  *
  */
 
@@ -20,6 +20,7 @@
 DATACONV_NAMESPACE_BEGIN
 
 namespace detail {
+
 	template <class T>
 	concept bit_castable_type_impl = (std::is_arithmetic_v<T> ||
 									  std::is_enum_v<T>)&&std::is_trivially_copyable_v<T>&& std::is_standard_layout_v<T>;
@@ -59,6 +60,15 @@ namespace detail {
 	using sized_integer_t = typename sized_integer<Size>::type;
 } // namespace detail
 
+/**
+ * @brief ビットキャスト (ビット単位でのキャスト)
+ * 
+ * @remark 値の整合性は保証されない．
+ * @tparam To キャスト先の型
+ * @tparam From キャスト元の型
+ * @param input キャスト元の値
+ * @return To キャスト後の値
+ */
 template <class To, class From>
 requires detail::bit_castable_type<To, From> static auto bit_cast(const From& input) noexcept -> To {
 	if constexpr (std::is_same_v<To, From>) {
@@ -70,6 +80,13 @@ requires detail::bit_castable_type<To, From> static auto bit_cast(const From& in
 	}
 }
 
+/**
+ * @brief 1のビット数を数える
+ * 
+ * @tparam T ビット演算可能な型
+ * @param value 対象の値
+ * @return std::size_t 1となるビット数
+ */
 template <detail::bit_operable_type T>
 static auto pop_count(const T& value) noexcept -> std::size_t {
 	using integer = detail::sized_integer_t<sizeof(T)>;
@@ -83,16 +100,40 @@ static auto pop_count(const T& value) noexcept -> std::size_t {
 	return result;
 }
 
+/**
+ * @brief 偶数パリティ
+ * 
+ * @tparam T ビット演算可能な型
+ * @param value 対象の値
+ * @return true 偶数
+ * @return false 奇数
+ */
 template <detail::bit_operable_type T>
 static auto even_parity(const T& value) noexcept -> bool {
 	return pop_count(value) & 1;
 }
 
+/**
+ * @brief 奇数パリティ
+ * 
+ * @tparam T ビット演算可能な型
+ * @param value 対象の値
+ * @return true 奇数
+ * @return false 偶数
+ */
 template <detail::bit_operable_type T>
 static auto odd_parity(const T& value) noexcept -> bool {
 	return !even_parity(value);
 }
 
+/**
+ * @brief 左に循環ビットシフト
+ * 
+ * @tparam T ビット演算可能な型
+ * @param value 対象の値
+ * @param count シフト数
+ * @return T シフト後の値
+ */
 template <detail::bit_operable_type T>
 static auto rotate_left(const T& value, std::size_t count) noexcept -> T {
 	using integer = detail::sized_integer_t<sizeof(T)>;
@@ -101,6 +142,14 @@ static auto rotate_left(const T& value, std::size_t count) noexcept -> T {
 	return bit_cast<T>(result);
 }
 
+/**
+ * @brief 右に循環ビットシフト
+ * 
+ * @tparam T ビット演算可能な型
+ * @param value 対象の値
+ * @param count シフト数
+ * @return T シフト後の値
+ */
 template <detail::bit_operable_type T>
 static auto rotate_right(const T& value, std::size_t count) noexcept -> T {
 	using integer = detail::sized_integer_t<sizeof(T)>;
@@ -109,7 +158,13 @@ static auto rotate_right(const T& value, std::size_t count) noexcept -> T {
 	return bit_cast<T>(result);
 }
 
-// fast bit reverse
+/**
+ * @brief ビット反転
+ * 
+ * @tparam T ビット演算可能な型
+ * @param value 対象の値
+ * @return T 反転後の値
+ */
 template <detail::bit_operable_type T>
 static auto reverse(const T& value) noexcept -> T {
 	using integer = detail::sized_integer_t<sizeof(T)>;

@@ -1,11 +1,11 @@
 /**
  * @file Exception.hpp
  * @author fugu133
- * @brief
+ * @brief 例外機能
  * @version 0.1
  * @date 2024-02-25
  *
- * @copyright Copyright (c) 2024
+ * @copyright Copyright (c) 2024 fugu133
  *
  */
 
@@ -31,6 +31,10 @@ class DataConverterBaseException : public std::runtime_error {
 	int error_code;
 };
 
+/**
+ * @brief 変換例外クラス
+ *
+ */
 class ConvertException : public DataConverterBaseException {
   public:
 	ConvertException(std::string&& what_message, int error_code) : DataConverterBaseException(what_message, error_code) {}

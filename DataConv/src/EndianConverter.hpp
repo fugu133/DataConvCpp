@@ -1,22 +1,11 @@
 /**
  * @file EndianConverter.hpp
  * @author fugu133
- * @brief
+ * @brief エンディアン変換機能
  * @version 0.1
  * @date 2024-02-24
  *
- * @copyright Copyright (c) 2024
- *
- */
-
-/**
- * @file EndianC.hpp
- * @author fugu133
- * @brief エンディアン変換
- * @version 0.1
- * @date 2023-05-02
- *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024 fugu133
  *
  */
 
@@ -29,12 +18,26 @@
 
 DATACONV_NAMESPACE_BEGIN
 
+/**
+ * @brief エンディアン変換可能な型を示す制約
+ *
+ * @tparam T 変換対象
+ */
 template <class T>
 concept endian_convertible_type = std::is_arithmetic_v<T> || std::is_enum_v<T>;
 
+/**
+ * @brief エンディアン変換可能なシーケンスコンテナ型を示す制約
+ *
+ * @tparam T 比較対象
+ */
 template <class T>
 concept endian_convertible_sequence_container_type = endian_convertible_type<typename T::value_type>&& sequence_container_type<T>;
 
+/**
+ * @brief エンディアンを示す列挙型
+ *
+ */
 enum class endian {
 #ifdef _WIN32
 	little = 0,
@@ -47,18 +50,40 @@ enum class endian {
 #endif
 };
 
+/**
+ * @brief マシン環境のエンディアンを取得
+ *
+ * @return constexpr auto
+ */
 static constexpr auto which() noexcept -> endian {
 	return endian::native;
 }
 
+/**
+ * @brief リトルエンディアンかどうかを取得
+ *
+ * @return constexpr auto
+ */
 static constexpr auto is_little_endian() noexcept -> bool {
 	return endian::native == endian::little;
 }
 
+/**
+ * @brief ビッグエンディアンかどうかを取得
+ *
+ * @return constexpr auto
+ */
 static constexpr auto is_big_endian() noexcept -> bool {
 	return not is_little_endian();
 }
 
+/**
+ * @brief バイトオーダーを逆転
+ *
+ * @tparam T 変換対象
+ * @param input 変換元の値
+ * @param output 変換後の値
+ */
 template <endian_convertible_type T>
 static auto reverse(const T& input, T& output) noexcept -> void {
 	for (std::size_t i = 0; i < sizeof(T); i++) {
@@ -66,6 +91,13 @@ static auto reverse(const T& input, T& output) noexcept -> void {
 	}
 }
 
+/**
+ * @brief バイトオーダーを逆転
+ *
+ * @tparam T 変換対象
+ * @param value 変換元の値
+ * @return T 変換後の値
+ */
 template <endian_convertible_type T>
 static auto reverse(const T& value) noexcept -> T {
 	T result = static_cast<T>(0);
@@ -73,6 +105,13 @@ static auto reverse(const T& value) noexcept -> T {
 	return result;
 }
 
+/**
+ * @brief リトルエンディアンをビッグエンディアンに変換
+ *
+ * @tparam T 変換対象
+ * @param input 変換元の値
+ * @param output 変換後の値
+ */
 template <endian_convertible_type T>
 static auto to_big_endian(const T& input, T& output) noexcept -> void {
 	if constexpr (is_little_endian()) {
@@ -82,6 +121,13 @@ static auto to_big_endian(const T& input, T& output) noexcept -> void {
 	}
 }
 
+/**
+ * @brief リトルエンディアンをビッグエンディアンに変換
+ *
+ * @tparam T 変換対象
+ * @param value 変換元の値
+ * @return T 変換後の値
+ */
 template <endian_convertible_type T>
 static auto to_big_endian(const T& value) noexcept -> T {
 	if constexpr (is_little_endian()) {
@@ -91,6 +137,13 @@ static auto to_big_endian(const T& value) noexcept -> T {
 	}
 }
 
+/**
+ * @brief ビッグエンディアンをリトルエンディアンに変換
+ *
+ * @tparam T 変換対象
+ * @param input 変換元の値
+ * @param output 変換後の値
+ */
 template <endian_convertible_type T>
 static auto to_little_endian(const T& input, T& output) noexcept -> void {
 	if constexpr (is_big_endian()) {
@@ -100,6 +153,13 @@ static auto to_little_endian(const T& input, T& output) noexcept -> void {
 	}
 }
 
+/**
+ * @brief ビッグエンディアンをリトルエンディアンに変換
+ *
+ * @tparam T 変換対象
+ * @param value 変換元の値
+ * @return T 変換後の値
+ */
 template <endian_convertible_type T>
 static auto to_little_endian(const T& value) noexcept -> T {
 	if constexpr (is_big_endian()) {
@@ -109,6 +169,13 @@ static auto to_little_endian(const T& value) noexcept -> T {
 	}
 }
 
+/**
+ * @brief リトルエンディアンをビッグエンディアンに変換
+ *
+ * @tparam T 変換対象
+ * @param input 変換元の値
+ * @param output 変換後の値
+ */
 template <endian_convertible_sequence_container_type T>
 static auto to_big_endian(const T& input, T& output) -> void {
 	if constexpr (dynamic_sequence_container_type<T>) {
@@ -122,6 +189,13 @@ static auto to_big_endian(const T& input, T& output) -> void {
 	}
 }
 
+/**
+ * @brief リトルエンディアンをビッグエンディアンに変換
+ *
+ * @tparam T 変換対象
+ * @param input 変換元の値
+ * @return T 変換後の値
+ */
 template <endian_convertible_sequence_container_type T>
 static auto to_big_endian(const T& input) -> T {
 	if constexpr (dynamic_sequence_container_type<T>) {
@@ -135,6 +209,13 @@ static auto to_big_endian(const T& input) -> T {
 	}
 }
 
+/**
+ * @brief ビッグエンディアンをリトルエンディアンに変換
+ *
+ * @tparam T 変換対象
+ * @param input 変換元の値
+ * @param output 変換後の値
+ */
 template <endian_convertible_sequence_container_type T>
 static auto to_little_endian(const T& input, T& output) -> void {
 	if constexpr (dynamic_sequence_container_type<T>) {
@@ -148,6 +229,13 @@ static auto to_little_endian(const T& input, T& output) -> void {
 	}
 }
 
+/**
+ * @brief ビッグエンディアンをリトルエンディアンに変換
+ *
+ * @tparam T 変換対象
+ * @param input 変換元の値
+ * @return T 変換後の値
+ */
 template <endian_convertible_sequence_container_type T>
 static auto to_little_endian(const T& input) -> T {
 	if constexpr (dynamic_sequence_container_type<T>) {

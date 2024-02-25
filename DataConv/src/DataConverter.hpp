@@ -1,3 +1,14 @@
+/**
+ * @file DataConverter.hpp
+ * @author fugu133
+ * @brief データ変換機能
+ * @version 0.1
+ * @date 2024-02-25
+ * 
+ * @copyright Copyright (c) 2024 fugu133
+ * 
+ */
+
 
 #pragma once
 
@@ -19,47 +30,82 @@ DATACONV_NAMESPACE_BEGIN
 using namespace nlohmann;
 
 /**
- * @brief 出力文字列のDelimiterを指定するインターフェース
+ * @brief 出力文字列のデリミタを指定するインターフェース
  *
  */
 struct DelimiterPolicyInterface {
+    /**
+     * @brief デリミタを取得
+     * 
+     * @return std::string デリミタ
+     */
 	auto operator()() const -> std::string { return getDelimiter(); }
-	auto operator()(const std::string& input) const -> std::string { return input + getDelimiter(); }
+	
+    /**
+     * @brief 末尾にデリミタを追加
+     * 
+     * @param input 入力文字列
+     * @return std::string 出力文字列
+     */
+    auto operator()(const std::string& input) const -> std::string { return input + getDelimiter(); }
 
   protected:
-	virtual auto getDelimiter() const -> std::string = 0;
+	
+    /**
+     * @brief デリミタを取得
+     * 
+     * @return std::string デリミタ
+     */
+    virtual auto getDelimiter() const -> std::string = 0;
 };
 
 /**
- * @brief SSV (Space-Separated Values) 形式
+ * @brief SSV (Space-Separated Values) 形式を指定するポリシー
  *
  */
 struct SsvFormatPolicy : public DelimiterPolicyInterface {
 	static constexpr char* delimiter = (char*)" ";
 
   protected:
+
+    /**
+     * @brief デリミタを取得
+     * 
+     * @return std::string デリミタ " "
+     */
 	auto getDelimiter() const -> std::string override { return delimiter; }
 };
 
 /**
- * @brief CSV (Comma-Separated Values) 形式
+ * @brief CSV (Comma-Separated Values) 形式を指定するポリシー
  *
  */
 struct CsvFormatPolicy : public DelimiterPolicyInterface {
 	static constexpr char* delimiter = (char*)",";
 
   protected:
+
+    /**
+     * @brief デリミタを取得
+     * 
+     * @return std::string デリミタ ","
+     */
 	auto getDelimiter() const -> std::string override { return delimiter; }
 };
 
 /**
- * @brief TSV (Tab-Separated Values) 形式
+ * @brief TSV (Tab-Separated Values) 形式を指定するポリシー
  *
  */
 struct TsvFormatPolicy : public DelimiterPolicyInterface {
 	static constexpr char* delimiter = (char*)"\t";
 
   protected:
+    /**
+     * @brief デリミタを取得
+     * 
+     * @return std::string デリミタ "\t"
+     */
 	auto getDelimiter() const -> std::string override { return delimiter; }
 };
 
@@ -71,6 +117,13 @@ struct ArrayHeaderFormatPolicy {
 	static constexpr char* prefix = (char*)"[";
 	static constexpr char* suffix = (char*)"]";
 
+    /**
+     * @brief ヘッダを生成
+     * 
+     * @param header_name ヘッダ名
+     * @param id コンテナのインデックス
+     * @return std::string ヘッダ文字列
+     */
 	auto operator()(const std::string& header_name, std::size_t id = 0) { return header_name + prefix + std::to_string(id) + suffix; }
 };
 
@@ -81,9 +134,21 @@ struct ArrayHeaderFormatPolicy {
 struct MemberHeaderFormatPolicy : public DelimiterPolicyInterface {
 	static constexpr char* delimiter = (char*)".";
 
+    /**
+     * @brief ヘッダを生成
+     * 
+     * @param object_name オブジェクト名
+     * @param member_name メンバ名
+     * @return std::string ヘッダ文字列
+     */
 	auto operator()(const std::string& object_name, const std::string& member_name) { return object_name + delimiter + member_name; }
 
   protected:
+    /**
+     * @brief デリミタを取得
+     * 
+     * @return std::string デリミタ "."
+     */
 	auto getDelimiter() const -> std::string override { return delimiter; }
 };
 
@@ -92,21 +157,91 @@ struct MemberHeaderFormatPolicy : public DelimiterPolicyInterface {
  *
  */
 struct StringConverterInterface {
+
+    /**
+     * @brief 文字列に変換
+     * 
+     * @param delimiter デリミタ
+     * @param inc_end 末尾にデリミタを含めるか
+     * @return std::string const 文字列
+     */
 	virtual auto toString(const std::string& delimiter = SsvFormatPolicy::delimiter, bool inc_end = false) const -> std::string = 0;
-	auto toSsv(bool inc_end = false) -> std::string const { return toString(SsvFormatPolicy::delimiter, inc_end); }
+	
+    /**
+     * @brief SSV文字列に変換
+     * 
+     * @param inc_end 末尾にデリミタを含めるか
+     * @return std::string const SSV文字列
+     */
+    auto toSsv(bool inc_end = false) -> std::string const { return toString(SsvFormatPolicy::delimiter, inc_end); }
+
+    /**
+     * @brief TSV文字列に変換
+     * 
+     * @param inc_end 末尾にデリミタを含めるか
+     * @return std::string const TSV文字列
+     */
 	auto toTsv(bool inc_end = false) -> std::string const { return toString(TsvFormatPolicy::delimiter, inc_end); }
-	auto toCsv(bool inc_end = false) -> std::string const { return toString(CsvFormatPolicy::delimiter, inc_end); }
-	virtual auto makeHeader(const std::string& delimiter = SsvFormatPolicy::delimiter, bool inc_end = false) const -> std::string = 0;
-	auto makeSsvHeader(bool inc_end = false) const -> std::string { return makeHeader(SsvFormatPolicy::delimiter, inc_end); }
-	auto makeTsvHeader(bool inc_end = false) const -> std::string { return makeHeader(TsvFormatPolicy::delimiter, inc_end); }
-	auto makeCsvHeader(bool inc_end = false) const -> std::string { return makeHeader(CsvFormatPolicy::delimiter, inc_end); }
+	
+    /**
+     * @brief CSV文字列に変換
+     * 
+     * @param inc_end 末尾にデリミタを含めるか
+     * @return std::string const CSV文字列
+     */
+    auto toCsv(bool inc_end = false) -> std::string const { return toString(CsvFormatPolicy::delimiter, inc_end); }
+	
+    /**
+     * @brief ヘッダを生成
+     * 
+     * @param delimiter デリミタ
+     * @param inc_end 末尾にデリミタを含めるか
+     * @return std::string const ヘッダ文字列
+     */
+    virtual auto makeHeader(const std::string& delimiter = SsvFormatPolicy::delimiter, bool inc_end = false) const -> std::string = 0;
+	
+    /**
+     * @brief SSVヘッダを生成
+     * 
+     * @param inc_end 末尾にデリミタを含めるか
+     * @return std::string const SSVヘッダ文字列
+     */
+    auto makeSsvHeader(bool inc_end = false) const -> std::string { return makeHeader(SsvFormatPolicy::delimiter, inc_end); }
+	
+    /**
+     * @brief TSVヘッダを生成
+     * 
+     * @param inc_end 末尾にデリミタを含めるか
+     * @return std::string const TSVヘッダ文字列
+     */
+    auto makeTsvHeader(bool inc_end = false) const -> std::string { return makeHeader(TsvFormatPolicy::delimiter, inc_end); }
+	
+    /**
+     * @brief CSVヘッダを生成
+     * 
+     * @param inc_end 末尾にデリミタを含めるか
+     * @return std::string const CSVヘッダ文字列
+     */
+    auto makeCsvHeader(bool inc_end = false) const -> std::string { return makeHeader(CsvFormatPolicy::delimiter, inc_end); }
 };
 
 DATACONV_CODE_GEN_RESULT_HAS_MEMBER_FUNCTION_CONCEPT(std::string, toString, std::string, bool);
+
+/**
+ * @brief 文字列変換機能を持つかを示す制約
+ * 
+ * @tparam T 制約対象の型
+ */
 template <class T>
 concept HasToString = DATACONV_CODE_GEN_RESULT_HAS_MEMBER_FUNCTION_CONCEPT_NAME(toString)<T>;
 
 DATACONV_CODE_GEN_RESULT_HAS_MEMBER_FUNCTION_CONCEPT(std::string, makeHeader, std::string&, bool);
+
+/**
+ * @brief ヘッダ生成機能を持つかを示す制約
+ * 
+ * @tparam T 制約対象の型
+ */
 template <class T>
 concept HasMakeHeader = DATACONV_CODE_GEN_RESULT_HAS_MEMBER_FUNCTION_CONCEPT_NAME(makeHeader)<T>;
 
@@ -115,6 +250,15 @@ concept HasMakeHeader = DATACONV_CODE_GEN_RESULT_HAS_MEMBER_FUNCTION_CONCEPT_NAM
  *
  */
 struct StringConverter {
+    /**
+     * @brief 文字列に変換
+     * 
+     * @tparam T 変換対象の型
+     * @param value 変換対象の値
+     * @param delimiter デリミタ文字
+     * @param inc_end 末尾にデリミタを含めるか
+     * @return std::string 変換後の文字列
+     */
 	template <class T>
 	static auto toString(const T& value, [[maybe_unused]] const std::string& delimiter = SsvFormatPolicy::delimiter,
 						 [[maybe_unused]] bool inc_end = false) -> std::string {
@@ -167,6 +311,16 @@ struct StringConverter {
 		}
 	}
 
+    /**
+     * @brief ヘッダを生成
+     * 
+     * @tparam T 変換対象の型
+     * @param header_name ヘッダ名
+     * @param obj 変換対象の値
+     * @param delimiter デリミタ文字
+     * @param inc_end 末尾にデリミタを含めるか
+     * @return std::string ヘッダ文字列
+     */
 	template <class T>
 	static auto makeHeader(const std::string& header_name, [[maybe_unused]] const T& obj,
 						   const std::string& delimiter = SsvFormatPolicy::delimiter, bool inc_end = false) -> std::string {
@@ -197,6 +351,17 @@ struct StringConverter {
 		}
 	}
 
+    /**
+     * @brief TとUを文字列変換連結
+     * 
+     * @tparam T 左辺の型
+     * @tparam U 右辺の型
+     * @param r 左辺の値
+     * @param l 右辺の値
+     * @param delimiter デリミタ文字
+     * @param inc_end 末尾にデリミタを含めるか
+     * @return std::string 変換連結した文字列
+     */
 	template <class T, class U>
 	static auto concatenation(const T& r, const U& l, const std::string& delimiter = SsvFormatPolicy::delimiter, bool inc_end = false)
 	  -> std::string {
@@ -205,19 +370,55 @@ struct StringConverter {
 };
 
 DATACONV_CODE_GEN_RESULT_HAS_MEMBER_FUNCTION_CONCEPT(std::size_t, toBinary, std::uint8_t*, std::size_t);
+
+/**
+ * @brief バイナリシリアライズ機能を持つかを示す制約
+ * 
+ * @tparam T 制約対象の型
+ */
 template <class T>
 concept HasToBinary = DATACONV_CODE_GEN_RESULT_HAS_MEMBER_FUNCTION_CONCEPT_NAME(toBinary)<T>;
 
 DATACONV_CODE_GEN_RESULT_HAS_MEMBER_FUNCTION_CONCEPT(std::size_t, fromBinary, std::uint8_t*, std::size_t);
+
+/**
+ * @brief バイナリデシリアライズ機能を持つかを示す制約
+ * 
+ * @tparam T 制約対象の型
+ */
 template <class T>
 concept HasFromBinary = DATACONV_CODE_GEN_RESULT_HAS_MEMBER_FUNCTION_CONCEPT_NAME(fromBinary)<T>;
 
+/**
+ * @brief バイナリ変換インターフェース
+ *
+ */
 struct BinaryConverterInterface {
-	virtual auto size() const -> std::size_t = 0;
+	
+    /**
+     * @brief バイナリサイズを取得
+     * 
+     * @return std::size_t サイズ
+     */
+    virtual auto size() const -> std::size_t = 0;
 
+    /**
+     * @brief バイナリに変換
+     * 
+     * @remark 名前解決できないので継承先でusing宣言すること
+     * @param output 出力データ
+     * @param offset オフセット
+     * @return std::size_t 変換後のサイズ
+     */
 	virtual auto toBinary(std::uint8_t* output, std::size_t offset = 0) const -> std::size_t = 0;
 
-	// 名前解決できないので継承先でusing宣言する
+	/**
+     * @brief バイナリにシリアライズ
+     * 
+     * @param output 出力データ
+     * @param offset オフセット
+     * @return std::size_t 変換後のサイズ
+     */
 	auto toBinary(std::vector<std::uint8_t>& output, std::size_t offset = 0) const -> std::size_t {
 		if (output.size() < size() + offset) {
 			output.resize(size() + offset);
@@ -225,14 +426,41 @@ struct BinaryConverterInterface {
 		return toBinary(output.data(), offset);
 	}
 
+    /**
+     * @brief バイナリからデシリアライズ
+     * 
+     * @remark 名前解決できないので継承先でusing宣言すること
+     * @param data 入力データ
+     * @param offset オフセット
+     * @return std::size_t 変換後のサイズ
+     */
 	virtual auto fromBinary(const std::uint8_t* data, std::size_t offset = 0) -> std::size_t = 0;
 
+    /**
+     * @brief バイナリからデシリアライズ
+     * 
+     * @param data 入力データ
+     * @param offset オフセット
+     * @return std::size_t 変換後のサイズ
+     */
 	auto fromBinary(const std::vector<std::uint8_t>& data, std::size_t offset = 0) -> std::size_t {
 		return fromBinary(data.data(), offset);
 	}
 };
 
+/**
+ * @brief バイナリ変換
+ *
+ */
 struct BinaryConverter {
+
+    /**
+     * @brief バイナリサイズを取得
+     * 
+     * @tparam T 変換対象の型
+     * @param input 変換対象の値
+     * @return std::size_t サイズ
+     */
 	template <class Input>
 	static auto size(const Input& input) -> std::size_t {
 		if constexpr (string_type<Input>) {
@@ -249,6 +477,15 @@ struct BinaryConverter {
 		}
 	}
 
+    /**
+     * @brief バイナリにシリアライズ
+     * 
+     * @tparam Input 変換対象の型
+     * @param input 変換対象の値
+     * @param output 出力データ
+     * @param offset オフセット
+     * @return std::size_t シリアライズ後のサイズ
+     */
 	template <class Input>
 	static auto toBinary(const Input& input, std::uint8_t* output, std::size_t offset = 0) -> std::size_t {
 		if constexpr (std::is_arithmetic_v<Input> || std::is_enum_v<Input>) {
@@ -268,6 +505,15 @@ struct BinaryConverter {
 		}
 	}
 
+    /**
+     * @brief バイナリにシリアライズ
+     * 
+     * @tparam Input 変換対象の型
+     * @param input 変換対象の値
+     * @param output 出力データ
+     * @param offset オフセット
+     * @return std::uint8_t* シリアライズ後のデータ
+     */
 	template <class Input>
 	static auto toBinary(const Input& input, std::vector<std::uint8_t>& output, std::size_t offset = 0) -> std::uint8_t* {
 		if constexpr (std::is_base_of_v<BinaryConverterInterface, Input> || HasToBinary<Input>) {
@@ -285,6 +531,15 @@ struct BinaryConverter {
 		}
 	}
 
+    /**
+     * @brief バイナリからデシリアライズ
+     * 
+     * @tparam Output 出力型
+     * @param input 入力データ
+     * @param output 出力データ
+     * @param offset オフセット
+     * @return std::size_t デシリアライズ後のサイズ
+     */
 	template <class Output>
 	static auto fromBinary(const std::uint8_t* input, Output& output, std::size_t offset = 0) -> std::size_t {
 		if constexpr (std::is_arithmetic_v<Output> || std::is_enum_v<Output>) {
@@ -304,6 +559,15 @@ struct BinaryConverter {
 		}
 	}
 
+    /**
+     * @brief バイナリからデシリアライズ
+     * 
+     * @tparam Output 出力型
+     * @param input 入力データ
+     * @param output 出力データ
+     * @param offset オフセット
+     * @return std::size_t デシリアライズ後のサイズ
+     */
 	template <class Output>
 	static auto fromBinary(const std::vector<std::uint8_t>& input, Output& output, std::size_t offset = 0) -> std::size_t {
 		if constexpr (std::is_base_of_v<BinaryConverterInterface, Output> || HasFromBinary<Output>) {
@@ -322,9 +586,22 @@ struct BinaryConverter {
 	}
 };
 
+/**
+ * @brief JSON変換インターフェース
+ *
+ */
 struct JsonConverterInterface {
-	virtual auto toJsonString() const -> std::string = 0;
-	virtual auto fromJsonString(const std::string& json) -> void = 0;
+	/**
+     * @brief JSONのシリアライズ
+     * 
+     * @return std::string JSON文字列
+     */
+    virtual auto toJsonString() const -> std::string = 0;
+	
+    /**
+     * @brief JSONのデシリアライズ
+     */
+    virtual auto fromJsonString(const std::string& json) -> void = 0;
 };
 
 DATACONV_NAMESPACE_END
@@ -566,35 +843,67 @@ DATACONV_NAMESPACE_END
 	
 	#define DATACONV_DEFINE_JSON_SERIALIZE_ENUM(DATACONV_CODE_GEN_TEMPLATE_TYPE, ...) NLOHMANN_JSON_SERIALIZE_ENUM(DATACONV_CODE_GEN_TEMPLATE_TYPE, __VA_ARGS__)
 
+
+    /**
+     * @brief 文字列変換コード生成
+     * 
+     */
 	#define  DATACONV_DEFINE_REQUIRED_STRING_CONVERTER(DATACONV_CODE_GEN_TEMPLATE_TYPE, ...) \
 		DATACONV_DEFINE_TO_STRING(DATACONV_CODE_GEN_TEMPLATE_TYPE, __VA_ARGS__) \
 		DATACONV_DEFINE_MAKE_HEADER(DATACONV_CODE_GEN_TEMPLATE_TYPE, __VA_ARGS__)
 		// DATACONV_DEFINE_FROM_STRING(DATACONV_CODE_GEN_TEMPLATE_TYPE, __VA_ARGS__)																			
 
+    /**
+     * @brief バイナリ変換コード生成
+     * 
+     */
 	#define  DATACONV_DEFINE_REQUIRED_BINARY_CONVERTER(DATACONV_CODE_GEN_TEMPLATE_TYPE, ...) \
 		DATACONV_DEFINE_SIZE(DATACONV_CODE_GEN_TEMPLATE_TYPE, __VA_ARGS__) \
 		DATACONV_DEFINE_TO_BINARY(DATACONV_CODE_GEN_TEMPLATE_TYPE, __VA_ARGS__) \
 		DATACONV_DEFINE_FROM_BINARY(DATACONV_CODE_GEN_TEMPLATE_TYPE, __VA_ARGS__)
 
+    /**
+     * @brief JSON変換コード生成
+     * 
+     */
 	#define DATACONV_DEFINE_REQUIRED_JSON_CONVERTER(DATACONV_CODE_GEN_TEMPLATE_TYPE, ...) \
 		DATACONV_DEFINE_TO_JSON(DATACONV_CODE_GEN_TEMPLATE_TYPE, __VA_ARGS__) \
 		DATACONV_DEFINE_FROM_JSON(DATACONV_CODE_GEN_TEMPLATE_TYPE, __VA_ARGS__)
 
-	#define DATACONV_DEFINE_REQUIRED_MULTI_CONVERTER(DATACONV_CODE_GEN_TEMPLATE_TYPE, ...)	\
+	/**
+     * @brief マルチ変換コード生成
+     * 
+     */
+    #define DATACONV_DEFINE_REQUIRED_MULTI_CONVERTER(DATACONV_CODE_GEN_TEMPLATE_TYPE, ...)	\
 		DATACONV_DEFINE_REQUIRED_STRING_CONVERTER(DATACONV_CODE_GEN_TEMPLATE_TYPE, __VA_ARGS__) \
 		DATACONV_DEFINE_REQUIRED_BINARY_CONVERTER(DATACONV_CODE_GEN_TEMPLATE_TYPE, __VA_ARGS__) \
 		DATACONV_DEFINE_REQUIRED_JSON_CONVERTER(DATACONV_CODE_GEN_TEMPLATE_TYPE, __VA_ARGS__)
 
+    /**
+     * @brief 文字列変換機能継承のショートハンド
+     * 
+     */
 	#define DATACONV_WITH_STRING_CONVERTER \
 		public DATACONV_NAMESPACE_BASE_TAG::StringConverterInterface
 
+    /**
+     * @brief バイナリ変換機能継承のショートハンド
+     * 
+     */
 	#define DATACONV_WITH_BINARY_CONVERTER \
 		public DATACONV_NAMESPACE_BASE_TAG::BinaryConverterInterface
 
+    /**
+     * @brief JSON変換機能継承のショートハンド
+     * 
+     */
 	#define DATACONV_WITH_JSON_CONVERTER \
 		public DATACONV_NAMESPACE_BASE_TAG::JsonConverterInterface
 
-
+    /**
+     * @brief マルチ変換機能継承のショートハンド
+     * 
+     */
 	#define DATACONV_WITH_MULTI_CONVERTER \
 		DATACONV_WITH_STRING_CONVERTER, \
 		DATACONV_WITH_BINARY_CONVERTER, \
