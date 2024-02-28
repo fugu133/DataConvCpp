@@ -246,7 +246,7 @@ struct Data : DATACONV_WITH_MULTI_CONVERTER {
     BaseData1 data1;
     BaseData2 data2;
 
-    DATACONV_DEFINE_REQUIRED_MULTI_CONVERTER(Data, BaseData1, BaseData2);
+    DATACONV_DEFINE_REQUIRED_MULTI_CONVERTER(Data, data1, data2);
 };
 ```
 
